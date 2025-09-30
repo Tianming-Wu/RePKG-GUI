@@ -6,8 +6,16 @@ PKGCmdGenerator::PKGCmdGenerator(PGSettings &settings, QObject *parent)
     : QObject{parent}
     , settings(settings)
 {
-    connect(&proc, &QProcess::readyRead, this, [&]() { emit consoleOutput(proc.readAll()); });
-    connect(&proc, &QProcess::finished, this, [&](int exitcode) { emit finished(exitcode); });
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+
+    connect(&proc, &QProcess::readyRead, this, [&]() {
+        emit consoleOutput(QString::fromLatin1(proc.readAll()));
+    });
+
+    connect(&proc, &QProcess::finished, this, [&](int exitcode) {
+        emit consoleOutput(QString::fromLatin1(proc.readAll()));
+        emit finished(exitcode);
+    });
 }
 
 void PKGCmdGenerator::PkgExtract(const pkgExtractCmd &ec)
@@ -19,7 +27,7 @@ void PKGCmdGenerator::PkgExtract(const pkgExtractCmd &ec)
     if(ec.dontConvertTex) argl.append("--no-tex-convert");
 
     argl.append(ec.file);
-    proc.execute(settings.getRePKGPath(), argl);
+    proc.start(settings.getRePKGPath(), argl);
 }
 
 void PKGCmdGenerator::PkgInfo(const pkgInfoCmd &ic)

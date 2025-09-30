@@ -27,6 +27,9 @@ void DropableLineEdit::dropEvent(QDropEvent *event)
             QString filePath = urlList.first().toLocalFile();
             setText(filePath);
             event->acceptProposedAction();
+
+            emit dropped(filePath);
         }
     }
+
 }

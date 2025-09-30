@@ -22,12 +22,13 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     about->setOpenExternalLinks(true);
     ui->statusbar->addWidget(about, 140);
 
+    // Availability Test
     QString repkgVersion = cmdgen.getVersion();
     if(!repkgVersion.isEmpty()) {
         ui->label_repkgVersion->setText(repkgVersion);
     } else {
-        // REPKG NOT AVAILABLE?
-        QMessageBox::warning(this, "RePKG-GUI", "Cannot get RePKG version");
+        QMessageBox::warning(this, "RePKG-GUI", tr("Failed to parse RePKG version"));
+        // exit?
     }
 
     // Load settings into ui
@@ -35,7 +36,10 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     ui->cb_autoExec->setChecked(settings.getAutoExecute());
     ui->cb_dontConvertTex->setChecked(settings.getDontConvertTex());
 
-    // settings update
+    ui->dle_defaultOutputPathMatch->setText(settings.getDefaultOutputPathMatch());
+    ui->dle_defaultOutputPathReplace->setText(settings.getDefaultOutputPathReplace());
+
+    // Settings update
     connect(ui->dle_defaultOpenPath, &QLineEdit::editingFinished, this, [&]{ settings.setDefaultOpenPath(ui->dle_defaultOpenPath->text()); });
     connect(ui->cb_autoExec, &QCheckBox::clicked, &settings, &PGSettings::setAutoExecute);
     connect(ui->cb_dontConvertTex, &QCheckBox::clicked, &settings, &PGSettings::setDontConvertTex);
@@ -46,6 +50,7 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
         if(!path.isEmpty()) {
             updateSourceDir(path);
             ui->dle_sourcePath->setText(path);
+            ui->dle_outputPath->setText(genOutputPath(path));
         }
     });
     connect(ui->pb_selectOutputPath, &QPushButton::clicked, this, [&]{
@@ -67,17 +72,21 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     connect(ui->dle_sourcePath, &DropableLineEdit::dropped, this, &MainWindow::updateSourceDir);
     connect(ui->dle_outputPath, &DropableLineEdit::dropped, this, &MainWindow::updateOutputDir);
 
+    // Auto complete output dir
+    connect(ui->dle_sourcePath, &DropableLineEdit::dropped, this, [&](const QString &source) {
+        ui->dle_outputPath->setText(genOutputPath(source));
+    });
+
     // Sub Process
     connect(&cmdgen, &PKGCmdGenerator::consoleOutput, ui->pte_log, &QPlainTextEdit::appendPlainText);
     connect(&cmdgen, &PKGCmdGenerator::finished, this, &MainWindow::execFinished);
 
     // Actions
     connect(ui->pb_Extract, &QPushButton::clicked, this, &MainWindow::startExtract);
-    connect(ui->dle_sourcePath, &QLineEdit::editingFinished, this, &MainWindow::startExtract);
+    // connect(ui->dle_sourcePath, &QLineEdit::editingFinished, this, &MainWindow::startExtract); // This login isn't right
 
     // Auto Trigger
-
-    // Availability Test
+    connect(ui->dle_sourcePath, &DropableLineEdit::dropped, this, [&] { if(settings.getAutoExecute()) startExtract(); });
 
 }
 
@@ -138,7 +147,7 @@ void MainWindow::updateOutputDir(const QString &path)
 
 void MainWindow::startExtract()
 {
-    if(running) return;
+    if(running || ui->dle_sourcePath->text().isEmpty()) return;
     pkgExtractCmd ec;
 
     ec.file = ui->dle_sourcePath->text();
@@ -146,6 +155,9 @@ void MainWindow::startExtract()
         setExtractResult(tr("ERROR: File not exists."), Qt::red);
         return;
     }
+
+    ec.output = ui->dle_outputPath->text();
+    ec.dontConvertTex = settings.getDontConvertTex();
 
     ui->pb_Extract->setEnabled(false);
     cmdgen.PkgExtract(ec);

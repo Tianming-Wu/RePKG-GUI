@@ -75,12 +75,12 @@
     <message>
         <location line="+66"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>关于</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>RePKG Version</source>
-        <translation type="unfinished"></translation>
+        <translation>RePKG 版本</translation>
     </message>
     <message>
         <location line="-65"/>
@@ -91,7 +91,7 @@
     <message>
         <location line="+13"/>
         <source>Replace rule</source>
-        <translation type="unfinished"></translation>
+        <translation>替换条件</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -109,7 +109,12 @@
         <translation>日志</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="+45"/>
+        <location filename="mainwindow.cpp" line="+30"/>
+        <source>Failed to parse RePKG version</source>
+        <translation>解析 RePKG 版本失败</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Select PKG file</source>
         <translation>选择 PKG 文件</translation>
     </message>
@@ -119,7 +124,7 @@
         <translation>PKG 文件 (*.pkg);;任何文件 (*)</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+8"/>
         <source>Select a output directory</source>
         <translation>选择输出目录</translation>
     </message>
@@ -129,24 +134,24 @@
         <translation>选择目录</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+91"/>
         <source>ERROR: File not exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>错误：文件不存在。</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+9"/>
         <source>Extracting...</source>
-        <translation type="unfinished"></translation>
+        <translation>正在提取…</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>ERROR Occoured</source>
-        <translation type="unfinished"></translation>
+        <translation>发生错误</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Complete</source>
-        <translation type="unfinished"></translation>
+        <translation>完成</translation>
     </message>
 </context>
 <context>
