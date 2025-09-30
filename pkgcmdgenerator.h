@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QFile>
+#include "pgsettings.h"
 
 struct pkgExtractCmd {
     QString file, output;
@@ -20,10 +21,12 @@ class PKGCmdGenerator : public QObject
 {
     Q_OBJECT
 public:
-    explicit PKGCmdGenerator(QObject *parent = nullptr);
+    explicit PKGCmdGenerator(PGSettings &settings, QObject *parent = nullptr);
 
     void PkgExtract(const pkgExtractCmd &ec);
     void PkgInfo(const pkgInfoCmd &ic);
+
+    QString getVersion();
 
 signals:
     void finished(int exitcode);
@@ -31,7 +34,7 @@ signals:
 
 private:
     QProcess proc;
-    QString repkg_exec;
+    PGSettings &settings;
 };
 
 #endif // PKGCMDGENERATOR_H

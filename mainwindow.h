@@ -20,13 +20,14 @@ public:
     ~MainWindow();
 
 private:
-    QString genOutputPath();
+    QString genOutputPath(const QString &source);
 
 private slots:
     void updateSourceDir(const QString& path);
     void updateOutputDir(const QString& path);
 
-    void start();
+    void startExtract();
+    void setExtractResult(const QString& text, const QColor& color = QColor());
 
     void execFinished(int exitcode);
 
@@ -35,5 +36,7 @@ private:
 
     PGSettings &settings;
     PKGCmdGenerator cmdgen;
+
+    bool running = false;
 };
 #endif // MAINWINDOW_H

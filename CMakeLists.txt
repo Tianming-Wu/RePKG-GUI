@@ -26,16 +26,22 @@ set(PROJECT_SOURCES
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
-find_package(Qt6 REQUIRED COMPONENTS Core)
-find_package(Qt6 REQUIRED COMPONENTS Core)
+    find_package(Qt6 REQUIRED COMPONENTS LinguistTools)
+    find_package(Qt6 REQUIRED COMPONENTS Core)
 
     qt_add_executable(RePKG-GUI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
 
-qt_add_translations(RePKG-GUI TS_FILES RePKG_GUI_zh_CN.ts)
+set(TS_FILES RePKG_GUI_zh_CN.ts)
+
+qt_add_translations(RePKG-GUI
+    TS_FILES ${TS_FILES}
+    LUPDATE_OPTIONS -locations relative -no-obsolete
+)
+
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET RePKG-GUI APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)

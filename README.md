@@ -1,4 +1,4 @@
-# RePKG_GUI
+# RePKG-GUI
 
 This project is not based on RePKG-GUI by idzyr, though the idea might be similar.
 

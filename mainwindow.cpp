@@ -3,20 +3,32 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , settings(settings)
+    , cmdgen(settings)
 {
     ui->setupUi(this);
 
     // UI Init
     this->setFixedSize(this->size());
+
     QLabel *about = new QLabel(this);
-    about->setText("RePKG-GUI by Tianming");
+    about->setText("<a href=\"https://github.com/Tianming-Wu/RePKG-GUI\">RePKG-GUI</a> by <a href=\"https://github.com/Tianming-Wu\">Tianming</a>");
     about->setStyleSheet("color: grey");
+    about->setOpenExternalLinks(true);
     ui->statusbar->addWidget(about, 140);
+
+    QString repkgVersion = cmdgen.getVersion();
+    if(!repkgVersion.isEmpty()) {
+        ui->label_repkgVersion->setText(repkgVersion);
+    } else {
+        // REPKG NOT AVAILABLE?
+        QMessageBox::warning(this, "RePKG-GUI", "Cannot get RePKG version");
+    }
 
     // Load settings into ui
     ui->dle_defaultOpenPath->setText(settings.getDefaultOpenPath());
@@ -37,7 +49,7 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
         }
     });
     connect(ui->pb_selectOutputPath, &QPushButton::clicked, this, [&]{
-        QString path = QFileDialog::getExistingDirectory(this, tr("Select a output directory"), genOutputPath());
+        QString path = QFileDialog::getExistingDirectory(this, tr("Select a output directory"), genOutputPath(ui->dle_sourcePath->text()));
         if(!path.isEmpty()) {
             updateOutputDir(path);
             ui->dle_outputPath->setText(path);
@@ -60,9 +72,13 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     connect(&cmdgen, &PKGCmdGenerator::finished, this, &MainWindow::execFinished);
 
     // Actions
-    connect(ui->pb_Extract, &QPushButton::clicked, this, &MainWindow::start);
+    connect(ui->pb_Extract, &QPushButton::clicked, this, &MainWindow::startExtract);
+    connect(ui->dle_sourcePath, &QLineEdit::editingFinished, this, &MainWindow::startExtract);
 
     // Auto Trigger
+
+    // Availability Test
+
 }
 
 MainWindow::~MainWindow()
@@ -70,10 +86,41 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-QString MainWindow::genOutputPath()
+QString MainWindow::genOutputPath(const QString& source)
 {
+    if(source.isEmpty()) return "";
 
-    return QString();
+    QString matchPattern = settings.getDefaultOutputPathMatch();
+    QString replaceTemplate = settings.getDefaultOutputPathReplace();
+
+    if (replaceTemplate.isEmpty()) {
+        QFileInfo fileInfo(source);
+        return fileInfo.absolutePath() + "/" + fileInfo.completeBaseName() + "_extracted";
+    }
+
+    if (matchPattern.isEmpty()) {
+        return replaceTemplate;
+    }
+
+    QRegularExpression regex(matchPattern);
+
+    if (!regex.isValid()) {
+        // Not valid regex, fallback
+        QFileInfo fileInfo(source);
+        return fileInfo.absolutePath() + "/" + fileInfo.completeBaseName() + "_extracted";
+    }
+
+    QRegularExpressionMatch match = regex.match(source);
+    if (match.hasMatch()) {
+        // 执行替换，支持 $1, $2 等反向引用
+        QString result = source;
+        result.replace(regex, replaceTemplate);
+        return result;
+    } else {
+        // 没有匹配，使用默认逻辑
+        QFileInfo fileInfo(source);
+        return fileInfo.absolutePath() + "/" + fileInfo.completeBaseName() + "_extracted";
+    }
 }
 
 void MainWindow::updateSourceDir(const QString &path)
@@ -89,21 +136,39 @@ void MainWindow::updateOutputDir(const QString &path)
     settings.setLastOpenPath(path);
 }
 
-void MainWindow::start()
+void MainWindow::startExtract()
 {
+    if(running) return;
     pkgExtractCmd ec;
 
     ec.file = ui->dle_sourcePath->text();
+    if(!QFile::exists(ec.file)) {
+        setExtractResult(tr("ERROR: File not exists."), Qt::red);
+        return;
+    }
 
-    ui->pb_Extract->setEnabled(true);
+    ui->pb_Extract->setEnabled(false);
     cmdgen.PkgExtract(ec);
+    setExtractResult(tr("Extracting..."));
+    running = true;
+}
+
+void MainWindow::setExtractResult(const QString &text, const QColor &color)
+{
+    ui->label_ExtractResult->setText(text);
+
+    QColor actualColor = color.isValid() ? color : palette().color(QPalette::WindowText);
+    QString style = QString("color: %1;").arg(actualColor.name());
+    ui->label_ExtractResult->setStyleSheet(style);
 }
 
 void MainWindow::execFinished(int exitcode)
 {
+    running = false;
     if(exitcode != 0) {
-
+        setExtractResult(tr("ERROR Occoured"), Qt::red);
     }
 
     ui->pb_Extract->setEnabled(true);
+    setExtractResult(tr("Complete"));
 }

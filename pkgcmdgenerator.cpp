@@ -2,10 +2,10 @@
 
 #include <QApplication>
 
-PKGCmdGenerator::PKGCmdGenerator(QObject *parent)
+PKGCmdGenerator::PKGCmdGenerator(PGSettings &settings, QObject *parent)
     : QObject{parent}
+    , settings(settings)
 {
-    repkg_exec = QApplication::applicationDirPath() + "/repkg.exe";
     connect(&proc, &QProcess::readyRead, this, [&]() { emit consoleOutput(proc.readAll()); });
     connect(&proc, &QProcess::finished, this, [&](int exitcode) { emit finished(exitcode); });
 }
@@ -19,10 +19,18 @@ void PKGCmdGenerator::PkgExtract(const pkgExtractCmd &ec)
     if(ec.dontConvertTex) argl.append("--no-tex-convert");
 
     argl.append(ec.file);
-    proc.execute(repkg_exec, argl);
+    proc.execute(settings.getRePKGPath(), argl);
 }
 
 void PKGCmdGenerator::PkgInfo(const pkgInfoCmd &ic)
 {
     // not supported yet :(
+}
+
+QString PKGCmdGenerator::getVersion()
+{
+    QProcess p;
+    p.setProcessChannelMode(QProcess::MergedChannels);
+    p.start(settings.getRePKGPath(), {"version"});
+    return p.waitForFinished(1000) ? QString::fromLatin1(p.readAll()).trimmed() : "";
 }
