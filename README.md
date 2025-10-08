@@ -8,6 +8,16 @@ The goal is to provide a more user-friendly, highly customizable experience.
 
 **Special Thanks** to the qtproject, they provide many powerful features that make this project possible.
 
+# License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
+
+## Third-party Components
+
+- **RePKG**: Licensed under the MIT License. See [RePKG LICENSE](./RePKG_LICENSE).
+- **Qt**: Portions of this project use Qt, which is licensed under the GNU Lesser General Public License (LGPL) v3. See [Qt LGPLv3 License](./LGPLv3_LICENSE).
+
+You may obtain the source code for Qt from [Qt official website](https://www.qt.io/download).
 
 # Features
 - Unpack PKG files without studying the command-line options of RePKG.
