@@ -24,6 +24,7 @@ You may obtain the source code for Qt from [Qt official website](https://www.qt.
 - Multi-language support (Working). Feel free to work on it, see [Wiki]()
 - Customizable Output Dir Matching Rule. (using regex)
 - Simple drag-and-drop control logic.
+- Auto-detect Steam Workshop directory.
 
 
 # Configure
@@ -59,4 +60,11 @@ If set to true, will automatically start the action if you opened or dropped a f
 ```ini
 [Application]
 AutoExecute=
+```
+
+### Auto Find Steam Workshop Directory (AutoFindWorkshopDir)
+If set to true, the program will automatically search for the Steam Workshop directory on all mounted drives. It will search common Steam installation paths and cache the result for faster subsequent loads. The default open path input will be disabled when this option is enabled.
+```ini
+[Default]
+AutoFindWorkshopDir=true
 ```
