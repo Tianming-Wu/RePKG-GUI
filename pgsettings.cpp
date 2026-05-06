@@ -9,11 +9,14 @@ PGSettings::PGSettings(QObject *parent)
 
 QString PGSettings::getOpenPath()
 {
-    QString result = getDefaultOpenPath();
-    if(result.isEmpty()) result = getLastOpenPath();
-    // if(result.isEmpty()) {
-    // find wallpaper engine
-    // }
+    QString result;
 
+    if (getAutoFindWorkshopDir()) {
+        result = getCachedOpenPath();
+    } else {
+        result = getDefaultOpenPath();
+    }
+
+    if (result.isEmpty()) result = getLastOpenPath();
     return result;
 }

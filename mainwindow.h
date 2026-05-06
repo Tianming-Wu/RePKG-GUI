@@ -26,6 +26,10 @@ private slots:
     void updateSourceDir(const QString& path);
     void updateOutputDir(const QString& path);
 
+    void onAutoFindWorkshopDirChanged(bool checked);
+    bool checkWorkshopDir(const QString& path);
+    QString findWorkshopDir();
+
     void startExtract();
     void setExtractResult(const QString& text, const QColor& color = QColor());
 
@@ -38,5 +42,7 @@ private:
     PKGCmdGenerator cmdgen;
 
     bool running = false;
+
+    bool initFlag = false;
 };
 #endif // MAINWINDOW_H

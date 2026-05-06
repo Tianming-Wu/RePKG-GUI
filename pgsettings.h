@@ -28,6 +28,12 @@ public:
     inline QString getDefaultOpenPath() { return settings.value("Default/DefaultOpenPath").toString(); }
     inline void setDefaultOpenPath(const QString& path) { settings.setValue("Default/DefaultOpenPath", path); }
 
+    inline bool getAutoFindWorkshopDir() { return settings.value("Default/AutoFindWorkshopDir", false).toBool(); }
+    inline void setAutoFindWorkshopDir(bool f) { settings.setValue("Default/AutoFindWorkshopDir", f); }
+
+    inline QString getCachedOpenPath() { return settings.value("Cached/OpenPath").toString(); }
+    inline void setCachedOpenPath(const QString& path) { settings.setValue("Cached/OpenPath", path); }
+
     inline QString getDefaultOutputPathMatch() { return settings.value("Default/DefaultOutputPathMatch").toString(); }
     inline void setDefaultOutputPathMatch(const QString& match) { settings.setValue("Default/DefaultOutputPathMatch", match); }
 

@@ -70,7 +70,7 @@
     <message>
         <location line="+16"/>
         <source>Auto find Steam workshop dir</source>
-        <translation type="unfinished"></translation>
+        <translation>自动定位创意工坊目录</translation>
     </message>
     <message>
         <location line="+66"/>

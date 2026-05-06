@@ -51,7 +51,7 @@ QPlainTextEdit {
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tabExtract">
      <attribute name="title">
@@ -244,9 +244,9 @@ QPlainTextEdit {
        <string>Auto Execute on open/drop</string>
       </property>
      </widget>
-     <widget class="QCheckBox" name="cb_ar">
+     <widget class="QCheckBox" name="cb_autoFindWorkshopDir">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>

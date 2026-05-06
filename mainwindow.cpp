@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QRegularExpression>
+#include <QStorageInfo>
 
 MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     : QMainWindow(parent)
@@ -32,7 +33,10 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     }
 
     // Load settings into ui
-    ui->dle_defaultOpenPath->setText(settings.getDefaultOpenPath());
+    bool b_autoFindWorkshopDir = settings.getAutoFindWorkshopDir();
+    ui->cb_autoFindWorkshopDir->setChecked(b_autoFindWorkshopDir);
+    onAutoFindWorkshopDirChanged(b_autoFindWorkshopDir);
+
     ui->cb_autoExec->setChecked(settings.getAutoExecute());
     ui->cb_dontConvertTex->setChecked(settings.getDontConvertTex());
 
@@ -41,6 +45,7 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
 
     // Settings update
     connect(ui->dle_defaultOpenPath, &QLineEdit::editingFinished, this, [&]{ settings.setDefaultOpenPath(ui->dle_defaultOpenPath->text()); });
+    connect(ui->cb_autoFindWorkshopDir, &QCheckBox::clicked, this, &MainWindow::onAutoFindWorkshopDirChanged);
     connect(ui->cb_autoExec, &QCheckBox::clicked, &settings, &PGSettings::setAutoExecute);
     connect(ui->cb_dontConvertTex, &QCheckBox::clicked, &settings, &PGSettings::setDontConvertTex);
 
@@ -88,6 +93,8 @@ MainWindow::MainWindow(PGSettings &settings, QWidget *parent)
     // Auto Trigger
     connect(ui->dle_sourcePath, &DropableLineEdit::dropped, this, [&] { if(settings.getAutoExecute()) startExtract(); });
 
+
+    initFlag = true; // mark init complete
 }
 
 MainWindow::~MainWindow()
@@ -143,6 +150,75 @@ void MainWindow::updateSourceDir(const QString &path)
 void MainWindow::updateOutputDir(const QString &path)
 {
     settings.setLastOpenPath(path);
+}
+
+void MainWindow::onAutoFindWorkshopDirChanged(bool checked)
+{
+    settings.setAutoFindWorkshopDir(checked);
+    if (checked) {
+        ui->dle_defaultOpenPath->setEnabled(false);
+        ui->pb_defaultOpenPath->setEnabled(false);
+
+        QString wd = [&]() -> QString {
+            if (initFlag) return findWorkshopDir(); // always search when triggered manually
+            QString cached = settings.getCachedOpenPath();
+            return (cached.isEmpty()) ? findWorkshopDir() : cached;
+        }();
+
+        ui->dle_defaultOpenPath->setText(wd);
+        settings.setCachedOpenPath(wd);
+    } else {
+        ui->dle_defaultOpenPath->setEnabled(true);
+        ui->pb_defaultOpenPath->setEnabled(true);
+        ui->dle_defaultOpenPath->setText(settings.getDefaultOpenPath());
+    }
+}
+
+bool MainWindow::checkWorkshopDir(const QString &path)
+{
+    QFileInfo fileInfo(path);
+
+    if(!(fileInfo.exists() && fileInfo.isDir())) return false;
+    static QRegularExpression wsdexp(R"()");
+
+    ///TODO: Check if this is partial match or full match
+    QRegularExpressionMatch match = wsdexp.match(path);
+    if (match.hasMatch()) {
+        return true;
+    }
+
+    return false;
+}
+
+QString MainWindow::findWorkshopDir()
+{
+    // Library: ":\SteamLibrary\steamapps\workshop\content\431960\"
+    // Installation: ":\Program Files (x86)\Steam\steamapps\workshop\content\431960\"
+
+    static const QString appPattern = "/steamapps/workshop/content/431960";
+
+    static const QString appPrefix[2] = {
+        "SteamLibrary",
+        "Program Files (x86)/Steam"
+    };
+
+    auto mvs = QStorageInfo::mountedVolumes();
+
+    foreach(QStorageInfo vol, mvs) {
+        if (vol.isValid() && vol.isReady()) {
+            QString root = vol.rootPath();
+
+            if (root.length() == 3 && root.endsWith(":/")) {
+                QString instPath = root + appPrefix[0] + appPattern;
+                if (checkWorkshopDir(instPath)) return instPath;
+
+                QString libPath = root + appPrefix[1] + appPattern;
+                if (checkWorkshopDir(libPath)) return libPath;
+            }
+        }
+    }
+
+    return "";
 }
 
 void MainWindow::startExtract()
